@@ -14,9 +14,9 @@ services:
 
     environment:
 
-      - POSTGRES_USER=postgres
+      - POSTGRES_USER=process.env.DB_user
 
-      - POSTGRES_PASSWORD=nicorobin
+      - POSTGRES_PASSWORD=process.env.DB_pass
 
     volumes:
 
