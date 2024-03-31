@@ -3,6 +3,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { HomeResponseDto, UpdateHomeDto } from './dto/home.dto';
 import { NotFoundError } from 'rxjs';
 import { GetHomeParams, CreateHomeParams } from './interface/home.interface';
+import { UserInfo } from 'src/user/interface/user.interface';
 
 export const homeSelect = {
     id: true,
@@ -163,5 +164,39 @@ export class HomeService {
         }
 
         return home.realtor;
+    }
+
+    async inquire(
+        homeId: number,
+        buyer: UserInfo,
+        message: string
+    ) {
+        const realtor = await this.getRealtorByHomeId(homeId);
+        return this.prismaService.message.create({
+            data: {
+                realtor_id: realtor.id,
+                buyer_id: buyer.id,
+                home_id: homeId,
+                message
+            }
+        });
+    }
+
+    getMessageByHome(homeId: number) {
+        return this.prismaService.message.findMany({
+            where: {
+                home_id: homeId
+            },
+            select: {
+                message: true,
+                buyer: {
+                    select: {
+                        name: true,
+                        phone: true,
+                        email: true
+                    }
+                }
+            }
+        })
     }
 }
