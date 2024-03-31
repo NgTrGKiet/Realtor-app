@@ -18,12 +18,14 @@ export class AuthGuard implements CanActivate {
     ) { }
 
     async canActivate(context: ExecutionContext) {
+        //1) Determine the UserType  that can execute the called endpont
         const roles = this.reflector.getAllAndOverride('roles', [
             context.getHandler(),
             context.getClass(),
         ]);
 
         if (roles?.length) {
+            //2) Grab the JWT from the request header and verify it
             const request = context.switchToHttp().getRequest();
             const token = request.headers?.authorization?.split('Bearer ')[1];
             try {
@@ -32,12 +34,14 @@ export class AuthGuard implements CanActivate {
                     process.env.JSON_TOKEN_KEY,
                 )) as JWTPayload;
 
+                //Database request to get user by id
                 const user = await this.prismaService.user.findUnique({
                     where: {
                         id: payload.id,
                     },
                 });
 
+                //4) Determine if the user can permission
                 if (!user) return false;
                 if (roles.includes(user.user_type)) return true;
 
